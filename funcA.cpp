@@ -2,6 +2,7 @@
 #include <cmath>
 
 double FuncA::compute(double x, int n) {
+    int n = 3; 
     double result = 0;
     
     for (int i = 1; i <= n; i++) {
