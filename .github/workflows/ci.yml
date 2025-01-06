@@ -1,39 +1,36 @@
-name: Makefile CI
+name: Build and Package
 
-on:
-  push:
-    branches: ["branchAutomake"]
-  pull_request:
-    branches: ["branchAutomake"]
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-
     steps:
-      - name: chekout_code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: dependencies
+      - name: set environment
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential autoconf automake make g++
-      - name: config
+          sudo apt update
+          sudo apt install -y build-essential automake dpkg-dev debhelper
+
+      - name: configure and build
         run: |
-          aclocal
-          autoconf
-          automake --add-missing
-      - name: build-configure
-        run: |
+          autoreconf --install
           ./configure
           make
-          make check
-      - name: Create tarball distribution
-        run: make dist
 
-      - name: upload
+      - name: package
+        run: |
+          make dist
+          mkdir -p debian/DEBIAN
+          mkdir -p debian/usr/local/bin
+          cp my_program debian/usr/local/bin/
+          cp debian/control debian/DEBIAN/control
+          dpkg-deb --build debian my_program.deb
+
+      - name: upload package
         uses: actions/upload-artifact@v3
         with:
-          name: program-tarball
-          path: program-*.tar.gz
+          name: program
+          path: program.deb
