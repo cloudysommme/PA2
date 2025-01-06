@@ -9,28 +9,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: set environment
+      - name: Set up C++ and Debian package environment
         run: |
           sudo apt update
           sudo apt install -y build-essential automake dpkg-dev debhelper
-
-      - name: configure and build
+      - name: Configure and Build
         run: |
           autoreconf --install
           ./configure
           make
-
-      - name: package
+      - name: Create Debian package
         run: |
-          make dist
-          mkdir -p debian/DEBIAN
-          mkdir -p debian/usr/local/bin
-          cp my_program debian/usr/local/bin/
-          cp debian/control debian/DEBIAN/control
-          dpkg-deb --build debian my_program.deb
-
-      - name: upload package
+          dpkg-deb --build debian
+      - name: Upload Debian Package
         uses: actions/upload-artifact@v3
         with:
           name: program
-          path: program.deb
+          path: debian.deb
